@@ -6,10 +6,10 @@ import Split from "react-split"
 import { nanoid } from "nanoid"
 
 export default function App() {
-    const [notes, setNotes] = React.useState([])
-    const [currentNoteId, setCurrentNoteId] = React.useState(
-        (notes[0] && notes[0].id) || ""
-    )
+    const [notes, setNotes] = React.useState(() => {
+        return JSON.parse(localStorage.getItem("notesData")) || []
+    })
+    const [currentNoteId, setCurrentNoteId] = React.useState((notes[0] && notes[0].id) || "")
 
     function createNewNote() {
         const newNote = {
@@ -23,8 +23,7 @@ export default function App() {
     function updateNote(text) {
         setNotes(oldNotes => oldNotes.map(oldNote => {
             return oldNote.id === currentNoteId
-                ? { ...oldNote, body: text }
-                : oldNote
+                ? { ...oldNote, body: text } : oldNote
         }))
     }
 
@@ -34,6 +33,10 @@ export default function App() {
         }) || notes[0]
     }
 
+    React.useEffect(() => {
+        localStorage.setItem("notesData", JSON.stringify(notes))
+    }, [notes])
+
     return (
         <main>
             {
@@ -42,21 +45,18 @@ export default function App() {
                     <Split
                         sizes={[30, 70]}
                         direction="horizontal"
-                        className="split"
-                    >
+                        className="split">
                         <Sidebar
                             notes={notes}
                             currentNote={findCurrentNote()}
                             setCurrentNoteId={setCurrentNoteId}
-                            newNote={createNewNote}
-                        />
+                            newNote={createNewNote} />
                         {
                             currentNoteId &&
                             notes.length > 0 &&
                             <Editor
                                 currentNote={findCurrentNote()}
-                                updateNote={updateNote}
-                            />
+                                updateNote={updateNote} />
                         }
                     </Split>
                     :
